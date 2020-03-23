@@ -1,7 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import Title from './components/Title';
+
 import './styles/styles.scss';
 
-const template = <p>Hello from react</p>;
+const template = (
+    <div>
+        <Title/>
+    </div>
+);
 
 ReactDOM.render(template, document.getElementById('root'));
