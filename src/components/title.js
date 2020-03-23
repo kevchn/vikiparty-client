@@ -26,13 +26,9 @@ class Title extends React.Component {
 
     this.channel.on("new_msg", payload => {
       this.setState({messages: this.state.messages.concat(payload)})
+      this.scrollToBottom()
       console.log(payload)
     })
-    this.scrollToBottom()
-  }
-
-  componentDidUpdate() {
-    this.scrollToBottom()
   }
 
   submitMessage = messageString => {
@@ -49,14 +45,14 @@ class Title extends React.Component {
 
   render() {
     return (
-      <div class='chat-container'>
+      <div className='chat-container'>
         {/* Top Bar */}
-        <div class="chat-header">
-          <h5>VIKIPARTY CHAT</h5>
+        <div className="chat-header">
+          <h5>CHAT</h5>
         </div>
 
         {/* Messages */}
-        <div class="chat-log">
+        <div className="chat-log">
           {this.state.messages.map((message, index) =>
             <ChatMessage
               key={index}
@@ -68,15 +64,15 @@ class Title extends React.Component {
         </div>
 
         {/* Input Area */}
-        <div class="chat-footer">
-          <input
+        <div className="chat-footer">
+          <ChatInput onSubmitMessage={this.submitMessage} />
+         <input
             type="text"
-            id="username-input"
-            placeholder={'Enter your name...'}
+            class="username-input"
+            placeholder={'Enter your name'}
             value={this.state.username}
             onChange={e => this.setState({ username: e.target.value })}
           />
-          <ChatInput onSubmitMessage={this.submitMessage} />
         </div>
       </div>
     );

@@ -3,11 +3,13 @@
 $dark-grey: rgb(23, 23, 23);
 $medium-grey: rgb(50, 50, 50);
 $light-grey: rgb(128, 128, 128);
+$blue: rgb(20, 114, 255);
+$light-blue: rgb(71, 148, 255);
 
 body {
   background-color: $dark-grey;
   color: white;
-  margin: 1ch;
+  margin: 0;
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
 }
 
@@ -15,15 +17,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: grey;
   justify-content: flex-end;
 }
 
 .chat-header {
   text-align: center;
-  padding: 1ch;
-  background-color: blue;
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid $medium-grey;
 }
 
 .chat-log {
@@ -32,22 +31,45 @@ body {
 }
 
 .chat-message {
+  font-size: 0.8em;
   display: flex;
+  padding: 1em 1em 0em;
   align-items: center;
 }
 
-.chat-footer {
-  background-color: yellowgreen;
-  left: 0;
-  bottom: 0;
-  padding: 1ch;
-  height: 10ch;
+.colored {
+  color: $light-blue;
 }
 
-.chat-footer input {
+.chat-footer {
+  left: 0;
+  bottom: 0;
+  height: 10ch;
+  padding: 1em;
+}
+
+.message-input{
   background-color: $medium-grey;
-  padding: 1ch;
-  margin: 0 auto;
   color: white;
   width: 100%;
+  padding: 1em;
+  border: none;
+}
+
+.username-input{
+  background-color: $medium-grey;
+  color: white;
+  float: left;
+  margin-top: 1em;
+  padding: 1em;
+  border: none;
+}
+.submit-input {
+  color: white;
+  background-color: $blue;
+  float: right;
+  margin-top: 1em;
+  padding: 1em;
+  border: none;
+  font-weight: bold;
 }

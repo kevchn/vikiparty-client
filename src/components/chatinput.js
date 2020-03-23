@@ -20,12 +20,15 @@ class ChatInput extends React.Component {
         }}
       >
         <input
+          class="message-input"
           type="text"
-          placeholder={'Enter message...'}
+          placeholder={'Send a message'}
           value={this.state.message}
           onChange={e => this.setState({ message: e.target.value })}
         />
-        <input type="submit" value={'Send'} />
+
+
+        <input class="submit-input" type="submit" value={'Send'} />
       </form>
     )
   }
