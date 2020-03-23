@@ -1,15 +1,35 @@
 import React from 'react';
 import {Socket} from "phoenix-channels"
+import ChatInput from './ChatInput'
+import ChatMessage from './ChatMessage'
 
 const socket_url = "ws://localhost:4000/socket"
 class Title extends React.Component {
-  socket = new Socket({params: {}})
-  state = {date: new Date()}
+  state = {
+    username: '',
+    messages: []
+  }
+  socket = new Socket(socket_url, {params: {}})
 
   componentDidMount() {
-    setTimeout(() => {
-      this.setState({date: new Date()})
-    }, 1000)
+    this.socket.connect()
+    this.channel = this.socket.channel("room:lobby", {})
+    this.channel.join()
+      .receive("ok", resp => { console.log("Joined successfully", resp) })
+      .receive("error", resp => { console.log("Unable to join", resp) })
+
+    this.channel.on("new_msg", payload => {
+      this.setState({messages: this.state.messages.concat(payload)})
+      console.log(payload)
+    })
+  }
+
+  submitMessage = messageString => {
+    let message = {
+      username: this.state.username,
+      body: messageString,
+    }
+    this.channel.push("new_msg", message)
   }
 
   render() {
@@ -19,8 +39,23 @@ class Title extends React.Component {
               <p>Phoenix channels based chat</p>
           </section>
           <div id="messages"></div>
-          <input id="chat-input" type="text"></input>
-          <h2>It is {this.state.date.toLocaleTimeString()}.</h2>
+          <input
+            type="text"
+            id="username-input"
+            placeholder={'Enter your name...'}
+            value={this.state.username}
+            onChange={e => this.setState({ username: e.target.value })}
+          />
+          <ChatInput
+            onSubmitMessage={this.submitMessage}
+          />
+          {this.state.messages.map((message, index) =>
+            <ChatMessage
+              key={index}
+              message={message.body}
+              username={message.username}
+            />,
+          )}
       </div>
     );
   }
