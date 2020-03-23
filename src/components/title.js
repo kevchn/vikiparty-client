@@ -48,7 +48,14 @@ class Title extends React.Component {
       <div className='chat-container'>
         {/* Top Bar */}
         <div className="chat-header">
-          <h5>CHAT</h5>
+         <p class='align-left'>CHAT</p>
+         <input
+            type="text"
+            class="username-input align-right"
+            placeholder={'Enter your name'}
+            value={this.state.username}
+            onChange={e => this.setState({ username: e.target.value })}
+          />
         </div>
 
         {/* Messages */}
@@ -66,13 +73,7 @@ class Title extends React.Component {
         {/* Input Area */}
         <div className="chat-footer">
           <ChatInput onSubmitMessage={this.submitMessage} />
-         <input
-            type="text"
-            class="username-input"
-            placeholder={'Enter your name'}
-            value={this.state.username}
-            onChange={e => this.setState({ username: e.target.value })}
-          />
+
         </div>
       </div>
     );
