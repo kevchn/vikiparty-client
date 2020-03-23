@@ -2,9 +2,9 @@ import React from 'react'
 
 function ChatMessage(props) {
   return (
-    <p>
-      <strong>{props.username}</strong> <em>{props.message}</em>
-    </p>
+    <div class='chat-message'>
+      <strong>{props.username}:</strong> <em>{props.message}</em>
+    </div>
   );
 }
 
