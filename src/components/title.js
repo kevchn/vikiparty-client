@@ -25,13 +25,11 @@ class Title extends React.Component {
       // Connect to elixir socket
       let socket = new Socket(socket_url, {params: {user_id: murmur}})
       socket.onError(() => { this.connectionErrorCallback("server") })
-      socket.onClose(() => { this.connectionCloseCallback("server") })
       socket.connect()
 
       // Connect to elixir channel
       this.channel = socket.channel("room:lobby", {})
       this.channel.onError(() => { this.connectionErrorCallback("room") })
-      this.channel.onClose(() => { this.connectionCloseCallback("room") })
       this.channel.join().receive("ok", this.connectionSuccessCallback)
 
       // Setup a listener on new messages from elixir channel
@@ -42,32 +40,30 @@ class Title extends React.Component {
         }
       })
 
+      // Setup tracker for users that join/leave the room
       this.presence = new Presence(this.channel)
       this.presence.onSync(() => {
         this.setState({members: this.presence.list()})
-        console.log(this.state.members)
       })
 
       this.presence.onJoin((id, current, newPres) => {
-        if (!current) {
-          console.log("User has joined", newPres)
-          if (id == murmur) {
-            console.log("It's me!")
+        if (!current && id != murmur) {
+          let message = {
+            body: "has joined!",
+            is_local: true
           }
-          console.log(id)
-        } else {
-          console.log("User has joined in an additional window", newPres)
+          this.setState({messages: this.state.messages.concat(message)})
         }
       })
 
       this.presence.onLeave((id, current, leftPres) => {
-        if (current.metas.length == 0) {
-          console.log("User has left from all devices", leftPres)
-        } else {
-          console.log("User has left from a device", leftPres)
-        }
+        console.log("someone left")
       })
     })
+  }
+
+  scrollToBottom = () => {
+    this.messagesRef.current.scrollIntoView({behavior: 'smooth'})
   }
 
   submitMessage = messageString => {
@@ -77,15 +73,11 @@ class Title extends React.Component {
     this.channel.push("new_msg", message)
   }
 
-  scrollToBottom = () => {
-    this.messagesRef.current.scrollIntoView({behavior: 'smooth'})
-  }
-
-  submitCommand = () => {
+  changeUsername = () => {
     let message = {
-      body: "Play",
+      username: this.state.username,
     }
-    this.channel.push("new_msg", message)
+    this.channel.push("change_username", message)
   }
 
   connectionSuccessCallback = () => {
@@ -104,14 +96,17 @@ class Title extends React.Component {
     this.setState({messages: this.state.messages.concat(message)})
   }
 
-  connectionCloseCallback = obj => {
-    let message = {
-      body: "Disconnected from the " + obj + ".",
-      is_local: true
-    }
-    this.setState({messages: this.state.messages.concat(message)})
-  }
+    // Google's "Anonymous Animals" has only 73 animals. They don't care about
+    // 74+ person chat rooms because it is so rare.
 
+    // Suppose we generate usernames of the form: CVCVC, where C = consonant, V
+    // = vowel. The cardinality of the result set is 21*5*21*5*21 = 231525.
+    // Suppose we have a 73 person chat room, where each person retrieves a
+    // random name from this set. The probability of no collisions is ~98.9%.
+    // For a 10 person chat room, this probability becomes ~99.98%.
+
+    // See calculation and result at:
+    // https://www.wolframalpha.com/input/?i=231525%21+%2F+%28231525-73%29%21%29%2F%28231525%5E73%29
 
 
   render() {
@@ -132,7 +127,7 @@ class Title extends React.Component {
             value={this.state.username}
             onChange={e => this.setState({ username: e.target.value })}
           />
-        <button className="submit-input align-right" onClick={this.submitCommand}>Command</button>
+        <button className="submit-input align-right" onClick={this.changeUsername}>Change Username</button>
         </div>
 
         {/* Messages */}
