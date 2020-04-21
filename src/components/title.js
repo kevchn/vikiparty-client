@@ -1,9 +1,8 @@
 import React from 'react'
-// import {Socket} from 'phoenix-channels'
 import {Socket, Presence} from 'phoenix'
 import ChatInput from './ChatInput'
 import ChatMessage from './ChatMessage'
-import Fingerprint2 from 'fingerprintjs2'
+import { v4 as uuidv4 } from 'uuid';
 
 // const socket_url = "ws://localhost:4000/socket"
 const socket_url = "ws://localhost:4000/socket"
@@ -16,40 +15,36 @@ class Title extends React.Component {
   messagesRef = React.createRef();
 
   componentDidMount() {
-    // TODO: turn into per tab fingerprint
-    // Generate browser canvas fingerprint
-    Fingerprint2.get(components => {
-      let values = components.map(function (component) { return component.value })
-      let murmur = Fingerprint2.x64hash128(values.join(''), 31)
-      console.log("Browser fingerprint: " + murmur)
+    // Generate random id 
+    let murmur = uuidv4()
+    console.log(murmur)
 
-      // Connect to elixir socket
-      let socket = new Socket(socket_url, {params: {user_id: murmur}})
-      socket.onError(() => { this.connectionErrorCallback("server") })
-      socket.connect()
+    // Connect to elixir socket
+    let socket = new Socket(socket_url, {params: {user_id: murmur}})
+    socket.onError(() => { this.connectionErrorCallback("server") })
+    socket.connect()
 
-      // Connect to elixir channel
-      this.channel = socket.channel("room:lobby", {})
-      this.channel.onError(() => { this.connectionErrorCallback("room") })
-      this.channel.join()
+    // Connect to elixir channel
+    this.channel = socket.channel("room:lobby", {})
+    this.channel.onError(() => { this.connectionErrorCallback("room") })
+    this.channel.join()
 
-      // Setup a listener on new messages from elixir channel
-      this.channel.on("new_msg", payload => {
-        this.setState({messages: this.state.messages.concat(payload)})
-        if (!payload.is_cmd) {
-          this.scrollToBottom()
-        }
-      })
-
-      // Setup tracker for users that join/leave the room
-      this.presence = new Presence(this.channel)
-      this.presence.onSync(() => {
-        this.setState({members: this.presence.list()})
-      })
-
-      // Set username
-      this.setUsername()
+    // Setup a listener on new messages from elixir channel
+    this.channel.on("new_msg", payload => {
+      this.setState({messages: this.state.messages.concat(payload)})
+      if (!payload.is_cmd) {
+        this.scrollToBottom()
+      }
     })
+
+    // Setup tracker for users that join/leave the room
+    this.presence = new Presence(this.channel)
+    this.presence.onSync(() => {
+      this.setState({members: this.presence.list()})
+    })
+
+    // Set username
+    this.setUsername()
   }
 
   scrollToBottom = () => {
