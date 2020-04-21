@@ -16,6 +16,7 @@ class Title extends React.Component {
   messagesRef = React.createRef();
 
   componentDidMount() {
+    // TODO: turn into per tab fingerprint
     // Generate browser canvas fingerprint
     Fingerprint2.get(components => {
       let values = components.map(function (component) { return component.value })
@@ -30,7 +31,7 @@ class Title extends React.Component {
       // Connect to elixir channel
       this.channel = socket.channel("room:lobby", {})
       this.channel.onError(() => { this.connectionErrorCallback("room") })
-      this.channel.join().receive("ok", this.connectionSuccessCallback)
+      this.channel.join()
 
       // Setup a listener on new messages from elixir channel
       this.channel.on("new_msg", payload => {
@@ -46,19 +47,8 @@ class Title extends React.Component {
         this.setState({members: this.presence.list()})
       })
 
-      this.presence.onJoin((id, current, newPres) => {
-        if (!current && id != murmur) {
-          let message = {
-            body: "has joined!",
-            is_local: true
-          }
-          this.setState({messages: this.state.messages.concat(message)})
-        }
-      })
-
-      this.presence.onLeave((id, current, leftPres) => {
-        console.log("someone left")
-      })
+      // Set username
+      this.setUsername()
     })
   }
 
@@ -66,11 +56,28 @@ class Title extends React.Component {
     this.messagesRef.current.scrollIntoView({behavior: 'smooth'})
   }
 
-  submitMessage = messageString => {
+  generateUsername = () => {
+    let animals = ["alligator", "anteater", "armadillo", "auroch", "axolotl", "badger", "bat",
+                   "beaver", "buffalo", "camel", "capybara", "chameleon", "cheetah",
+                   "chinchilla", "chipmunk", "chupacabra", "cormorant", "coyote", "crow",
+                   "dingo", "dinosaur", "dog", "dolphin", "dragon", "duck", "dumbo octopus",
+                   "elephant", "ferret", "fox", "frog", "giraffe", "gopher", "grizzly",
+                   "hedgehog", "hippo", "hyena", "jackal", "ibex", "ifrit", "iguana", "koala",
+                   "kraken", "lemur", "leopard", "liger", "lion", "llama", "manatee", "mink",
+                   "monkey", "narwhal", "nyan cat", "orangutan", "otter", "panda", "penguin",
+                   "platypus", "pumpkin", "python", "quagga", "rabbit", "raccoon", "rhino",
+                   "sheep", "shrew", "skunk", "slow loris", "squirrel", "tiger", "turtle",
+                   "unicorn", "walrus", "wolf", "wolverine", "wombat"]
+    let random_animal = animals[Math.floor(Math.random() * animals.length)]
+    return "Anonymous " + random_animal
+  }
+
+  setUsername = () => {
+    // todo: load username from Chrome storage if exists
     let message = {
-      body: messageString,
+      username: this.generateUsername()
     }
-    this.channel.push("new_msg", message)
+    this.channel.push("set_username", message)
   }
 
   changeUsername = () => {
@@ -80,12 +87,11 @@ class Title extends React.Component {
     this.channel.push("change_username", message)
   }
 
-  connectionSuccessCallback = () => {
+  submitMessage = messageString => {
     let message = {
-      body: "You have connected to the room as " + this.state.username + '.',
-      is_local: true
+      body: messageString,
     }
-    this.setState({messages: this.state.messages.concat(message)})
+    this.channel.push("new_msg", message)
   }
 
   connectionErrorCallback = obj => {
@@ -96,28 +102,10 @@ class Title extends React.Component {
     this.setState({messages: this.state.messages.concat(message)})
   }
 
-    // Google's "Anonymous Animals" has only 73 animals. They don't care about
-    // 74+ person chat rooms because it is so rare.
-
-    // Suppose we generate usernames of the form: CVCVC, where C = consonant, V
-    // = vowel. The cardinality of the result set is 21*5*21*5*21 = 231525.
-    // Suppose we have a 73 person chat room, where each person retrieves a
-    // random name from this set. The probability of no collisions is ~98.9%.
-    // For a 10 person chat room, this probability becomes ~99.98%.
-
-    // See calculation and result at:
-    // https://www.wolframalpha.com/input/?i=231525%21+%2F+%28231525-73%29%21%29%2F%28231525%5E73%29
-
-
   render() {
     return (
       <div className='chat-container'>
         {/* Top Bar */}
-        <div>
-          {this.state.members.map((item, index) => (
-            <li key={index}>{item.metas[0]['username']}</li>
-          ))}
-        </div>
         <div className="chat-header">
          <p className='align-left'>CHAT</p>
          <input

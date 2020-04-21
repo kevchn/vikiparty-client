@@ -19,9 +19,15 @@ function ChatMessage(props) {
   }
   else if (props.is_announcement) {
     return (
-      <div className='chat-message'>
-        {formattedTimestamp}&nbsp;<i><strong className='colored'>{props.username}&nbsp;</strong> {props.message}</i>
-      </div>
+    <div className='chat-message'>
+      <span>
+        <strong className='colored'>{props.username}</strong>
+        &nbsp;
+        <i className='greyed'>{formattedTimestamp}</i>
+      <br/>
+        <i className='greyed'>{props.message}</i>
+      </span>
+    </div>
     );
   }
   else return (
@@ -31,7 +37,7 @@ function ChatMessage(props) {
         &nbsp;
         <i className='greyed'>{formattedTimestamp}</i>
       <br/>
-      {props.message}
+        {props.message}
       </span>
     </div>
   );
